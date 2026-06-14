@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 use chrono::{Datelike, Duration, Utc};
 
 use crate::habit::{Day, Habit, HabitType};
+use crate::list::ChecklistType;
 use crate::storage::{self, NotificationSettings};
 use crate::notifications::NotificationData;
 
@@ -57,6 +58,9 @@ pub enum ScreenMode {
     Editing,
     Deleting,
     Reset,
+    List,
+    ListAdd,
+    CheckOff,
 }
 
 
@@ -86,6 +90,7 @@ pub struct App {
     pub current_screen: CurrentScreen,
     pub screen_mode: ScreenMode,
     pub current_habit: Habit,
+    pub list_index: usize,
     pub current_day: Day,
     pub notif: Arc<Mutex<NotificationData>>,
 }
@@ -100,6 +105,7 @@ impl App {
             current_screen: CurrentScreen::Today,
             screen_mode: ScreenMode::Normal,
             current_day: Day::Today,
+            list_index: 0,
             current_habit: Habit::default(),
             notif: Arc::new(Mutex::new(NotificationData::default())),
         }
@@ -151,6 +157,22 @@ impl App {
         }
     }
 
+    pub fn toggle_checkoff_mode(&mut self, habit: Habit) {
+        if let ScreenMode::Normal = self.screen_mode {
+            self.screen_mode = ScreenMode::CheckOff;
+            self.current_habit = habit;
+            self.list_index = 0;
+        }
+    }
+
+    pub fn toggle_edit_list(&mut self, habit: Habit) {
+        if let ScreenMode::Normal = self.screen_mode {
+            self.screen_mode = ScreenMode::List;
+            self.current_habit = habit;
+            self.list_index = 0;
+        }
+    }
+
     pub fn toggle_edit_mode(&mut self, habit: Habit) {
         if let ScreenMode::Normal = self.screen_mode {
             self.screen_mode = ScreenMode::Editing;
@@ -177,6 +199,22 @@ impl App {
         }
     }
 
+    pub fn toggle_checklist_type(&mut self) {
+        if !self.counter.switch {
+            self.build_habits[self.counter.build_counter].checklist.checklist_type = match self.build_habits[self.counter.build_counter].checklist.checklist_type {
+                ChecklistType::None => ChecklistType::RoundRobin,
+                ChecklistType::RoundRobin => ChecklistType::Todo,
+                ChecklistType::Todo => ChecklistType::None,
+            };
+        } else {
+            self.avoid_habits[self.counter.avoid_counter].checklist.checklist_type = match self.avoid_habits[self.counter.avoid_counter].checklist.checklist_type {
+                ChecklistType::None => ChecklistType::RoundRobin,
+                ChecklistType::RoundRobin => ChecklistType::Todo,
+                ChecklistType::Todo => ChecklistType::None,
+            };
+        }
+    }
+
     pub fn toggle_build_habits(&mut self) {
         if self.counter.switch {
             self.counter.switch = !self.counter.switch;
@@ -186,6 +224,35 @@ impl App {
     pub fn toggle_avoid_habit(&mut self) {
         if !self.counter.switch {
             self.counter.switch = !self.counter.switch;
+        }
+    }
+
+    pub fn increment_list_counter(&mut self) {
+        if !self.current_habit.checklist.checklist.is_empty() {
+            self.list_index = (self.list_index + 1).rem_euclid(self.current_habit.checklist.checklist.len());
+        }
+    }
+
+    pub fn decrement_list_counter(&mut self) {
+        if !self.current_habit.checklist.checklist.is_empty() {
+            self.list_index = (self.list_index - 1).rem_euclid(self.current_habit.checklist.checklist.len());
+        }
+    }
+
+    pub fn edit_list_item(&mut self) {
+        self.screen_mode = ScreenMode::ListAdd;
+    }
+    pub fn add_list_item(&mut self) {
+        self.current_habit.checklist.checklist.insert(self.list_index, "".to_string());
+        self.screen_mode = ScreenMode::ListAdd;
+    }
+
+    pub fn delete_list_item(&mut self) {
+        if !self.current_habit.checklist.checklist.is_empty() {
+            self.current_habit.checklist.checklist.remove(self.list_index);
+            if self.list_index > 0 {
+                self.list_index = self.list_index - 1;
+            }
         }
     }
 

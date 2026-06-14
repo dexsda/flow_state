@@ -7,7 +7,7 @@ mod today;
 
 use crate::app::App;
 use layout::{render_body, render_tab, render_title};
-use popups::{confirm_float, habit_form_float};
+use popups::{confirm_float, habit_form_float, list_float, check_off_float};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     Frame,
@@ -35,6 +35,9 @@ pub fn ui(frame: &mut Frame, app: &App) {
         ScreenMode::Editing => habit_form_float(frame, area, app, "Edit habit"),
         ScreenMode::Deleting => confirm_float(frame, area, app, "Confirm delete"),
         ScreenMode::Reset => confirm_float(frame, area, app, "Confirm reset"),
+        ScreenMode::List => list_float(frame, area, app, "Edit checklist ([a] add [d/Del] delete [e] edit current [j/k] move)", false),
+        ScreenMode::ListAdd => list_float(frame, area, app, "Adding new element...", true),
+        ScreenMode::CheckOff => check_off_float(frame, area, app, "([Enter] select [Esc] back out [j/k] move)"),
         _ => {}
     }
 }

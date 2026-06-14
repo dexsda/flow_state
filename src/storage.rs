@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     app::AppError,
     habit::{Habit, HabitType},
+    list::Checklist,
 };
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -72,12 +73,14 @@ fn populate_dummy_data() -> (Vec<Habit>, Vec<Habit>) {
             habit_type: HabitType::Build,
             days_completed: HashSet::new(),
             created: NaiveDate::from_ymd_opt(2025, 06, 12).unwrap(),
+            checklist: Checklist::default(),
         },
         Habit {
             name: "Read 10 pages".to_string(),
             habit_type: HabitType::Build,
             days_completed: HashSet::new(),
             created: NaiveDate::from_ymd_opt(2025, 06, 12).unwrap(),
+            checklist: Checklist::default(),
         },
     ];
     let avoid_habits = vec![
@@ -86,12 +89,14 @@ fn populate_dummy_data() -> (Vec<Habit>, Vec<Habit>) {
             habit_type: HabitType::Avoid,
             days_completed: HashSet::new(),
             created: NaiveDate::from_ymd_opt(2025, 06, 12).unwrap(),
+            checklist: Checklist::default(),
         },
         Habit {
             name: "Late-night snacking".to_string(),
             habit_type: HabitType::Avoid,
             days_completed: HashSet::new(),
             created: NaiveDate::from_ymd_opt(2025, 06, 12).unwrap(),
+            checklist: Checklist::default(),
         },
     ];
     (build_habits, avoid_habits)

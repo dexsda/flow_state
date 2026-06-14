@@ -4,11 +4,92 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Position, Rect},
     style::{Color, Style, Stylize},
     text::Line,
-    widgets::{Block, BorderType, Borders, Clear, Padding, Paragraph},
+    widgets::{Block, BorderType, Borders, Clear, Padding, Paragraph, List, ListItem},
     Frame,
 };
 
 use super::helpers::centered_rect;
+
+pub fn check_off_float(frame: &mut Frame, area: Rect, app: &App, title: &str) {
+    let popup_area = centered_rect(area, 50, (app.current_habit.checklist.checklist.len() as u16) + 20);
+    let popup_block = Block::default()
+        .borders(Borders::ALL)
+        .title(title)
+        .border_type(BorderType::Rounded)
+        .padding(Padding::proportional(1));
+    let inner_area = popup_block.inner(popup_area);
+
+    let items: Vec<ListItem> = app.current_habit.checklist.checklist
+        .iter() 
+        .enumerate()
+        .map(|(idx, item)| {
+            let text = format!(
+                " -> {}",
+                item,
+            );
+            if idx == app.list_index {
+                ListItem::new(text).bg(Color::Green).fg(Color::Black)
+            } else {
+                ListItem::new(text)
+            }
+        })
+        .collect();
+
+    let list = List::new(items).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .title(app.current_habit.name.clone()),
+    );
+
+    frame.render_widget(Clear, popup_area);
+    frame.render_widget(popup_block, popup_area);
+    frame.render_widget(list, inner_area);
+}
+
+pub fn list_float(frame: &mut Frame, area: Rect, app: &App, title: &str, is_edit: bool) {
+    let popup_area = centered_rect(area, 50, (app.current_habit.checklist.checklist.len() as u16) + 20);
+    let popup_block = Block::default()
+        .borders(Borders::ALL)
+        .title(title)
+        .border_type(BorderType::Rounded)
+        .padding(Padding::proportional(1));
+    let inner_area = popup_block.inner(popup_area);
+
+    let items: Vec<ListItem> = app.current_habit.checklist.checklist
+        .iter() 
+        .enumerate()
+        .map(|(idx, item)| {
+            let text = format!(
+                " -> {}",
+                item,
+            );
+            if idx == app.list_index {
+                ListItem::new(text).bg(Color::Green).fg(Color::Black)
+            } else {
+                ListItem::new(text)
+            }
+        })
+        .collect();
+
+    let list = List::new(items).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .title(app.current_habit.name.clone()),
+    );
+
+    frame.render_widget(Clear, popup_area);
+    frame.render_widget(popup_block, popup_area);
+    frame.render_widget(list, inner_area);
+
+    if is_edit {
+        let x_offset = app.current_habit.checklist.checklist[app.list_index].len() as u16 + 4;
+        let input_area = inner_area;
+        let position = Position::new(input_area.x + x_offset + 1, input_area.y + 1 + (app.list_index as u16));
+        frame.set_cursor_position(position);
+    }
+}
 
 pub fn habit_form_float(frame: &mut Frame, area: Rect, app: &App, title: &str) {
     let popup_area = centered_rect(area, 50, 40);

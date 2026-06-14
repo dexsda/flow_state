@@ -3,6 +3,8 @@ use std::{collections::HashSet, fmt};
 use chrono::{Duration, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::list;
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum Day {
     Today,
@@ -26,6 +28,7 @@ impl Day {
     }
 }
 
+#[derive(PartialEq)]
 pub enum HabitStatus {
     Complete,
     InComplete,
@@ -35,7 +38,7 @@ impl fmt::Display for HabitStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             HabitStatus::Complete => write!(f, "✔"),
-            HabitStatus::InComplete => write!(f, "✘"),
+            HabitStatus::InComplete => write!(f, " "),
         }
     }
 }
@@ -73,6 +76,7 @@ pub struct Habit {
     pub habit_type: HabitType,
     pub days_completed: HashSet<NaiveDate>,
     pub created: NaiveDate,
+    pub checklist: list::Checklist,
 }
 
 impl Default for Habit {
@@ -82,6 +86,7 @@ impl Default for Habit {
             habit_type: HabitType::Build,
             days_completed: HashSet::default(),
             created: NaiveDate::default(),
+            checklist: list::Checklist::default(),
         }
     }
 }

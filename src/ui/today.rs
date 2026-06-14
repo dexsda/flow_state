@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use crate::app::App;
 use crate::habit::{Day, Habit};
+use crate::list::ChecklistType;
 use ratatui::widgets::BorderType;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
@@ -10,6 +11,8 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem},
     Frame,
 };
+
+use itertools;
 
 pub fn render_today_page(body_chunks: Rc<[Rect]>, frame: &mut Frame, app: &App) {
     let habit_chunks = Layout::default()
@@ -52,12 +55,26 @@ fn render_habit_list<'a>(
         .iter()
         .enumerate()
         .map(|(idx, habit)| {
+            let ls = if habit.checklist.checklist_type != ChecklistType::None 
+                && !habit.checklist.checklist.is_empty() 
+                && (habit.checklist.checklist_type == ChecklistType::Todo || idx == selected_index) {
+                ["\n      -> ".to_string(), itertools::join(habit.checklist.checklist.clone(), "\n      -> ")].join("")
+            } else {
+                "".to_string()
+            };
+            let list_type = match habit.checklist.checklist_type {
+                ChecklistType::None => "",
+                ChecklistType::RoundRobin => "🗒️ ",
+                ChecklistType::Todo => "📌 ",
+            }.to_string();
             let text = format!(
-                "{} [{}] {}  •  {}",
+                "{} [{}] {}{}  •  {}{}",
                 habit.check_status(current_day),
                 idx + 1,
+                list_type,
                 habit.name,
-                habit.check_pattern()
+                habit.check_pattern(),
+                ls
             );
             if idx == selected_index && is_active {
                 ListItem::new(text).bg(color).fg(Color::Black)

@@ -19,6 +19,7 @@ use ratatui::{
 
 mod app;
 mod habit;
+mod list;
 mod input;
 mod storage;
 mod ui;
